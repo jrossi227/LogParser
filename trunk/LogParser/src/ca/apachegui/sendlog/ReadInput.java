@@ -1,3 +1,4 @@
+package ca.apachegui.sendlog;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class ReadInput
 	    String s;
 	    while ((s = in.readLine()) != null && s.length() != 0)
 	    {	
+	    	log.trace("Received Message: " + s);
 	    	Thread logDataThread=new SendData(s);
 	    	logDataThread.run();
 	    }

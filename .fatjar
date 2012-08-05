@@ -1,14 +1,14 @@
 #Fat Jar Configuration File
-#Sun Dec 25 19:12:35 EST 2011
+#Sun Aug 05 13:31:12 EDT 2012
 onejar.license.required=true
 manifest.classpath=
 manifest.removesigners=true
 onejar.checkbox=false
 jarname=LogParser.jar
 manifest.mergeall=true
-manifest.mainclass=ReadInput
+manifest.mainclass=ca.apachegui.sendlog.ReadInput
 manifest.file=<createnew>
 jarname.isextern=false
 onejar.expand=
 excludes=
-includes=<inc|LogParser/log4j>~log4j.properties
+includes=<inc|LogParser/log4j>

@@ -9,52 +9,13 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
+
+import org.apache.log4j.Logger;
 
 public class HTTPRequestPoster
 {
-	/**
-	 * Sends an HTTP GET request to a url
-	 *
-	 * @param endpoint - The URL of the server. (Example: " http://www.yahoo.com/search")
-	 * @param requestParameters - all the request parameters (Example: "param1=val1&param2=val2"). Note: This method will add the question mark (?) to the request - DO NOT add it yourself
-	 * @return - The response from the end point
-	 * @throws IOException 
-	 */
-	public static String sendGetRequest(String endpoint, String requestParameters) throws IOException
-	{
-		String result = null;
-		if (endpoint.startsWith("http://"))
-		{
-			// Send a GET request to the servlet
-			
-			// Construct data
-			StringBuffer data = new StringBuffer();
-
-			// Send data
-			String urlStr = endpoint;
-			if (requestParameters != null && requestParameters.length () > 0)
-			{
-				urlStr += "?" + requestParameters;
-			}
-			URL url = new URL(urlStr);
-			URLConnection conn = url.openConnection ();
-
-			// Get the response
-			BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			StringBuffer sb = new StringBuffer();
-			String line;
-			while ((line = rd.readLine()) != null)
-			{
-				sb.append(line);
-			}
-			rd.close();
-			result = sb.toString();
-			
-		}
-		return result;
-	}
-
+	private static Logger log = Logger.getLogger(HTTPRequestPoster.class);
+	
 	/**
 	 * Reads data from the data reader and posts it to a server via POST request.
 	 * data - The data you want to send
@@ -62,7 +23,7 @@ public class HTTPRequestPoster
 	 * output - writes the server's response to output
 	 * @throws Exception
 	 */
-	public static void postData(Reader data, URL endpoint, Writer output, String contentType) throws Exception
+	public static void postData(String data, URL endpoint) throws Exception
 	{
 		HttpURLConnection urlc = null;
 		
@@ -72,42 +33,30 @@ public class HTTPRequestPoster
 		urlc.setDoInput(true);
 		urlc.setUseCaches(false);
 		urlc.setAllowUserInteraction(false);
-		urlc.setRequestProperty("Content-type", contentType);
+		urlc.setRequestProperty("Content-type", "application/x-www-form-urlencoded; charset=UTF-8");
+		urlc.setRequestProperty("Content-Length", Integer.toString(data.length()));
 
 		OutputStream out = urlc.getOutputStream();
 
-		Writer writer = new OutputStreamWriter(out, "UTF-8");
-		pipe(data, writer);
-		writer.close();
+		OutputStreamWriter outStream = new OutputStreamWriter(out, "UTF-8");
+		 
+		log.trace("Sending data: " + data);
+        outStream.write(data);
+        outStream.close();
 			
-		if (out != null)
-			out.close();
-			
-		InputStream in = urlc.getInputStream();
-			
-		Reader reader = new InputStreamReader(in);
-		pipe(reader, output);
-		reader.close();
-			
-		if (in != null)
-			in.close();
-			
-		if (urlc != null)
-			urlc.disconnect();
-	}
-
-	/**
-	 * Pipes everything from the reader to the writer via a buffer
-	 */
-	private static void pipe(Reader reader, Writer writer) throws IOException
-	{
-		char[] buf = new char[1024];
-		int read = 0;
-		while ((read = reader.read(buf)) >= 0)
-		{
-			writer.write(buf, 0, read);
-		}
-		writer.flush();
+		
+        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(urlc.getInputStream(), "UTF-8"));
+        String line = "";
+        String result = "";
+        while((line = bufferedReader.readLine()) != null) {
+            result += line;
+        }
+        
+        log.trace("Response code: " + urlc.getResponseCode());
+        
+        log.trace("result: " + result);
+        
+        bufferedReader.close();
 	}
 
 }
